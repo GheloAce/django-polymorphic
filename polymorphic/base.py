@@ -96,7 +96,12 @@ class PolymorphicModelBase(ModelBase):
 
         # validate resulting default manager
         if django.VERSION >= (1, 10) and not new_class._meta.abstract:
-            self.validate_model_manager(new_class.objects, model_name, 'objects')
+            # Since 1.10, accessing Model.objects on a swapped model raises an AttributeError
+            #   So we skip self.validate_model_manager() since we don't expect a Swapped Model be used anyway
+            if new_class._meta.swapped:
+                pass
+            else:
+                self.validate_model_manager(new_class.objects, model_name, 'objects')
         else:
             self.validate_model_manager(new_class._default_manager, model_name, '_default_manager')
 
